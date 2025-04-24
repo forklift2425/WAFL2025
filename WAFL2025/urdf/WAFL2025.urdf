@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="WAFL2025">
+  
+ <link name="base_footprint"/>
+
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.44764 -8.6961E-05 -0.19475"
+        rpy="0 0 0" />
+      <mass
+        value="75.51" />
+      <inertia
+        ixx="1.7717"
+        ixy="0.0070117"
+        ixz="-0.21444"
+        iyy="2.3738"
+        iyz="0.11565"
+        izz="1.7629" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.78039 0.76078 0.74118 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="chassis_base_footprint" type="fixed">
+    <origin xyz="0 0 0.125" rpy="0 0 0"/>  
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+  </joint>
+
+
+  <link
+    name="left_web">
+    <inertial>
+      <origin
+        xyz="-0.000209 -0.0002904 0.057128"
+        rpy="0 0 0" />
+      <mass
+        value="1.4293" />
+      <inertia
+        ixx="0.0041861"
+        ixy="-0.00043848"
+        ixz="-2.1438E-05"
+        iyy="0.0038924"
+        iyz="-2.9788E-05"
+        izz="0.0042523" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/left_web.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/left_web.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="leftweb"
+    type="continuous">
+    <origin
+      xyz="0.37473 0.16927 -0.351"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="left_web" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="left_wheel">
+    <inertial>
+      <origin
+        xyz="6.1764E-05 -1.0018E-05 -9.5402E-03"
+        rpy="0 0 0" />
+      <mass
+        value="1.4135" />
+      <inertia
+        ixx="0.0037641"
+        ixy="-2.5259E-07"
+        ixz="-2.7508E-08"
+        iyy="0.0037626"
+        iyz="4.464E-09"
+        izz="0.0064566" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/left_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/left_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="leftwheel"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.158"
+      rpy="-1.5708 0 -0.0" />
+    <parent
+      link="left_web" />
+    <child
+      link="left_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="50"
+      velocity="50" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="right_web">
+    <inertial>
+      <origin
+        xyz="0.00013451 -0.00030111 0.05303"
+        rpy="0 0 0" />
+      <mass
+        value="1.5507" />
+      <inertia
+        ixx="0.0041861"
+        ixy="-0.00043848"
+        ixz="-2.1438E-05"
+        iyy="0.0038924"
+        iyz="-2.9788E-05"
+        izz="0.0042523" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/right_web.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/right_web.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rightweb"
+    type="continuous">
+    <origin
+      xyz="0.37493 -0.17027 -0.351"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="right_web" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="right_wheel">
+    <inertial>
+      <origin
+        xyz="6.1764E-05 -1.0018E-05 -9.5402E-03"
+        rpy="0 0 0" />
+      <mass
+        value="1.4135" />
+      <inertia
+        ixx="0.0037641"
+        ixy="-2.5259E-07"
+        ixz="-2.7508E-08"
+        iyy="0.0037626"
+        iyz="4.464E-09"
+        izz="0.0064566" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/right_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/right_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rightwheel"
+    type="continuous">
+    <origin
+      xyz="0 0 -0.158"
+      rpy="-1.5708 0 0.4201" />
+    <parent
+      link="right_web" />
+    <child
+      link="right_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="50"
+      velocity="50" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="castor">
+    <inertial>
+      <origin
+        xyz="-0.014681 8.0115E-06 -0.033862"
+        rpy="0 0 0" />
+      <mass
+        value="1.5287" />
+      <inertia
+        ixx="0.0041861"
+        ixy="-0.00043848"
+        ixz="-2.1438E-05"
+        iyy="0.0038924"
+        iyz="-2.9788E-05"
+        izz="0.0042523" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/castor.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/castor.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="castorjoint"
+    type="continuous">
+    <origin
+      xyz="-0.087559 0 -0.374"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="castor" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="castor_wheel">
+    <inertial>
+      <origin
+        xyz="5.8206E-05 -1.471E-05 -0.038908"
+        rpy="0 0 0" />
+      <mass
+        value="1.5287" />
+      <inertia
+        ixx="0.0037641"
+        ixy="-2.5259E-07"
+        ixz="-2.7508E-08"
+        iyy="0.0037626"
+        iyz="4.464E-09"
+        izz="0.0064566" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/castor_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.65098 0.61961 0.58824 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://WAFL2025/meshes/castor_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="castorwheel"
+    type="continuous">
+    <origin
+      xyz="0.0087891 0.018594 -0.135"
+      rpy="-1.5708 0 -0.44156" />
+    <parent
+      link="castor" />
+    <child
+      link="castor_wheel" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+     
+  </joint> 
+   <!-- hok -->
+  <link name="hokuyo_link">
+   <inertial>
+     <mass value="0.5"/>
+     <inertia ixx="0.001" ixy="0" ixz="0"
+             iyy="0.001" iyz="0"
+             izz="0.001"/>
+   </inertial>
+   <visual>
+    <geometry>
+      <cylinder radius="0.04" length="0.06"/>  <!-- Adjust size based on your Hokuyo model -->
+      <mesh filename="package://WAFL2025/meshes/hokuyo.dae" scale="1 1 1"/>
+    </geometry>
+    <material name="Blue">
+      <color rgba="0 0 1 1"/>
+    </material>
+   </visual>
+   <collision>
+    <geometry>
+      <cylinder radius="0.04" length="0.06"/>
+    </geometry>
+   </collision>
+  </link> 
+  <joint name="hokuyo_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="hokuyo_link"/>
+    <origin xyz="0.59 0 0.5" rpy="0 0 0"/>  <!-- Adjust position -->
+  </joint>
+  <!-- Hokuyo -->
+  <gazebo reference="hokuyo_link">
+    <sensor type="ray" name="hokuyo_laser">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>
+    	  true
+	</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+       <scan>
+         <horizontal>
+          <samples>720</samples>
+          <resolution>1</resolution>
+          <min_angle>-1.57</min_angle>
+          <max_angle>1.57</max_angle>
+         </horizontal>
+       </scan>
+       <range>
+         <min>0.1</min>
+         <max>30.0</max>
+         <resolution>0.01</resolution>
+       </range>
+      </ray>
+      <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
+       <topicName>/scan</topicName>
+       <frameName>hokuyo_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+  
+  <!-- Kinect-->
+  
+  <link name="kinect_link">
+   <visual>
+    <geometry>
+      <mesh filename="package://WAFL2025/meshes/kinect.dae" scale="1 1 1"/>
+    </geometry>
+    <material name="Green">
+      <color rgba="0 1 0 1"/>  <!-- Makes it blue -->
+    </material>
+   </visual>
+
+   <collision>
+    <geometry>
+      <box size="0.073 0.276 0.072"/>
+    </geometry>
+   </collision>
+
+   <inertial>
+    <mass value="0.5"/>  <!-- Increase mass if Kinect is not stable -->
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <inertia ixx="0.005" iyy="0.005" izz="0.005" ixy="0" ixz="0" iyz="0"/>
+   </inertial>
+  </link>
+
+
+  <joint name="kinect_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="kinect_link"/>
+    <origin xyz="0.65 0 0.42" rpy="0 0 0"/>
+  </joint>
+
+<!-- Kinect Plugin -->
+<gazebo reference="kinect_link">
+  <sensor type="depth" name="kinect_sensor">
+    <update_rate>20</update_rate>
+    <camera>
+      <horizontal_fov>1.047198</horizontal_fov>
+      <image>
+        <width>640</width>
+        <height>480</height>
+        <format>R8G8B8</format>
+      </image>
+      <clip>
+        <near>0.05</near>
+        <far>3</far>
+      </clip>
+    </camera>
+    <plugin name="camera_plugin" filename="libgazebo_ros_openni_kinect.so">
+      <cameraName>camera_ir</cameraName>
+      <imageTopicName>/camera/color/image_raw</imageTopicName>
+      <cameraInfoTopicName>/camera/color/camera_info</cameraInfoTopicName>
+      <depthImageTopicName>/camera/depth/image_raw</depthImageTopicName>
+      <depthImageCameraInfoTopicName>/camera/depth/camera_info</depthImageCameraInfoTopicName>
+      <pointCloudTopicName>/camera/depth/points</pointCloudTopicName>
+      <frameName>kinect_link</frameName>
+      <pointCloudCutoff>0.5</pointCloudCutoff>
+      <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+    </plugin>
+  </sensor>
+</gazebo>
+  
+
+
+<link name="imu_link">
+  <inertial>
+    <mass value="0.01" />
+    <origin xyz="0 0 0" />
+    <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001" />
+  </inertial>
+</link>
+
+<joint name="imu_joint" type="fixed">
+  <parent link="base_link" />  <!-- Attach IMU to the base link -->
+  <child link="imu_link" />
+  <origin xyz="0 0 0.1" rpy="0 0 0" />  <!-- Adjust position as needed -->
+</joint>
+
+<gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>100</update_rate>
+      <visualize>true</visualize>
+      <topic>/imu/data</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>imu</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link</frameName>
+        <initialOrientationAsReference>false</initialOrientationAsReference>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>
+
+
+
+
+<gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
+</gazebo>
+
+
+<transmission name="leftweb_transmission" >
+ <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="leftweb_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="leftweb">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+</transmission>
+
+<transmission name="leftwheel_transmission" >
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="leftwheel_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="leftwheel">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+</transmission>
+
+<transmission name="rightweb_transmission">
+   <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="rightweb_motor">
+      <mechanicalReduction>1</mechanicalReduction>	
+    </actuator>
+    <joint name="rightweb">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+</transmission>
+
+<transmission name="rightwheel_transmission" >
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="rightwheel_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="rightwheel">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+</transmission>
+
+<transmission name="castorjoint_transmission" >
+   <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="castorjoint_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="castorjoint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+</transmission>
+
+<transmission name="castorwheel_transmission" >
+   <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="castorwheel_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="castorwheel">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+</transmission>
+
+
+<gazebo reference="base_link">
+    <disableCollisions>true</disableCollisions>
+  </gazebo>
+  
+  
+<gazebo>
+  <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+
+    <!-- Plugin update rate in Hz -->
+    <updateRate>50</updateRate>
+
+    <!-- Name of left joint, defaults to `left_joint` -->
+    <leftJoint>leftwheel</leftJoint>
+
+    <!-- Name of right joint, defaults to `right_joint` -->
+    <rightJoint>rightwheel</rightJoint>
+
+    <!-- The distance from the center of one wheel to the other, in meters, defaults to 0.34 m -->
+    <wheelSeparation>0.5</wheelSeparation>
+
+    <!-- Diameter of the wheels, in meters-->
+    <wheelDiameter>0.1</wheelDiameter>
+
+    <!-- Wheel acceleration, in rad/s^2, defaults to 0.0 rad/s^2 -->
+    <wheelAcceleration>1.0</wheelAcceleration>
+
+    <!-- Maximum torque which the wheels can produce, in Nm, defaults to 5 Nm -->
+    <wheelTorque>20</wheelTorque>
+
+    <!-- Topic to receive geometry_msgs/Twist message commands, defaults to `cmd_vel` -->
+    <commandTopic>cmd_vel</commandTopic>
+
+    <!-- Topic to publish nav_msgs/Odometry messages, defaults to `odom` -->
+    <odometryTopic>odom</odometryTopic>
+
+    <!-- Odometry frame, defaults to `odom` -->
+    <odometryFrame>odom</odometryFrame>
+
+    <!-- Robot frame to calculate odometry from, defaults to `base_footprint` -->
+    <robotBaseFrame>base_footprint</robotBaseFrame>
+
+    <!-- Odometry source, 0 for ENCODER, 1 for WORLD, defaults to WORLD -->
+    <odometrySource>1</odometrySource>
+
+
+    <!-- Set to true to publish transforms for the odometry, defaults to true -->
+    <publishOdom>true</publishOdom>
+
+    <!-- Set to true to publish transforms for the wheel links, defaults to false -->
+    <publishWheelTF>false</publishWheelTF>
+
+    <!-- Set to true to publish sensor_msgs/JointState on /joint_states for the wheel joints, defaults to false -->
+    <publishWheelJointState>false</publishWheelJointState>
+
+    <!-- Set to true to swap right and left wheels, defaults to true -->
+    <legacyMode>true</legacyMode>
+  </plugin>
+</gazebo>
+
+
+</robot>

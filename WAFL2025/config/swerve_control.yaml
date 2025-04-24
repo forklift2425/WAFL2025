@@ -1,0 +1,46 @@
+
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+
+leftweb_steer_controller:
+  type: "position_controllers/JointPositionController"
+  joint: "leftweb"
+  p: 100.0
+  i: 0.01
+  d: 10.0
+
+rightweb_steer_controller:
+  type: "position_controllers/JointPositionController"
+  joint: "rightweb"
+  p: 100.0
+  i: 0.01
+  d: 10.0
+
+castorjoint_steer_controller:
+  type: "position_controllers/JointPositionController"
+  joint: "castorjoint"
+  p: 100.0
+  i: 0.01
+  d: 10.0
+
+leftwheel_drive_controller:
+  type: "velocity_controllers/JointVelocityController"
+  joint: "leftwheel"
+  p: 500.0
+  i: 0.01
+  d: 10.0
+
+rightwheel_drive_controller:
+  type: "velocity_controllers/JointVelocityController"
+  joint: "rightwheel"
+  p: 500.0
+  i: 0.01
+  d: 10.0
+
+castorwheel_drive_controller:
+  type: "velocity_controllers/JointVelocityController"
+  joint: "castorwheel"
+  p: 500.0
+  i: 0.01
+  d: 10.0
