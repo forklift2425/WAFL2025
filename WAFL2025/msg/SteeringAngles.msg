@@ -1,2 +1,0 @@
-float32 front_angle
-float32 rear_angle
