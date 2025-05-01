@@ -14,7 +14,7 @@ class ManualDriveController:
         # Publishers
         self.wheel_speeds_pub = rospy.Publisher('/wheel_speeds', WheelSpeeds, queue_size=10)
         self.steering_angles_pub = rospy.Publisher('/steering_angles', SteeringAngles, queue_size=10)
-        self.actions_pub=rospy.Publisher("/swerve/raw_data", Float32MultiArray,queue_size=10)
+       # self.actions_pub=rospy.Publisher("/swerve/raw_data", Float32MultiArray,queue_size=10)
 
         self.speeds = WheelSpeeds()
         self.angles = SteeringAngles()
@@ -25,8 +25,8 @@ class ManualDriveController:
     def cmd_vel_callback(self, msg):
         speed = msg.linear.x
         if msg.linear.x > 0 or msg.linear.x < 0:
-            self.speeds.left_speed  = self.avgPWM
-            self.speeds.right_speed = self.avgPWM
+            self.speeds.left_speed  = self.avgPWM * speed
+            self.speeds.right_speed = self.avgPWM * speed
             self.RS=speed
             self.LS=speed
             
@@ -60,12 +60,16 @@ class ManualDriveController:
             self.angles.front_angle = -1.57
             self.angles.rear_angle = -1.57
 
+        elif msg.linear.z == 1.0:
+            self.angles.front_angle = 0
+            self.angles.rear_angle = 0
+
         elif msg.linear.x == 0 and msg.linear.y == 0 and msg.angular.z == 0:
             self.speeds.left_speed  = 0
             self.speeds.right_speed = 0
 
-            self.angles.front_angle = 0
-            self.angles.rear_angle  = 0
+            self.angles.front_angle = self.angles.front_angle
+            self.angles.rear_angle = self.angles.rear_angle 
 
             self.RS=speed
             self.LS=speed
@@ -82,7 +86,7 @@ class ManualDriveController:
             self.angles.rear_angle,
             self.angles.front_angle]
         
-        self.actions_pub.publish(raw_msg)
+      #  self.actions_pub.publish(raw_msg)
 
 
     def run(self):
