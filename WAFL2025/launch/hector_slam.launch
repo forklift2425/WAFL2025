@@ -1,0 +1,92 @@
+<launch>
+    <!-- Arguments -->
+    <arg name="arg_x" default="0.00" />
+    <arg name="arg_y" default="0.00" />
+    <arg name="arg_z" default="0.3" />
+    <arg name="arg_R" default="0.00" />
+    <arg name="arg_P" default="0.00" />
+    <arg name="arg_Y" default="0.00" />
+
+    <!-- Load the robot into parameter server -->
+    <param name="robot_description" textfile="$(find WAFL2025)/urdf/WAFL2025.urdf"/> 
+
+    <!-- Joint State Publisher -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+        <param name="use_gui" value="False"/>
+        <rosparam param="source_list">[/joint_states]</rosparam>
+    </node>
+
+    <!-- ******** HECTOR SLAM INTEGRATION (ODOMETRY DISABLED) ******** -->
+    <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+        <!-- Frame Configuration -->
+        <param name="map_frame" value="map" />
+        <param name="base_frame" value="base_link" />
+        <param name="odom_frame" value="odom" />
+        
+        <!-- Disable odometry publishing since you have external odometry -->
+        <param name="pub_map_odom_transform" value="false"/>
+        <param name="pub_odometry" value="false"/>
+        
+        <!-- TF Settings -->
+        <param name="use_tf_scan_transformation" value="true"/>
+        <param name="use_tf_pose_start_estimate" value="false"/>
+        
+        <!-- Map Parameters -->
+        <param name="map_resolution" value="0.05"/>
+        <param name="map_size" value="1024"/>  <!-- Reduced for stability -->
+        <param name="map_start_x" value="0.5"/>
+        <param name="map_start_y" value="0.5"/>
+        
+        <!-- Update Parameters -->
+        <param name="update_factor_free" value="0.4"/>
+        <param name="update_factor_occupied" value="0.7"/>
+        <param name="map_update_distance_thresh" value="0.1"/>
+        <param name="map_update_angle_thresh" value="0.04"/>
+        
+        <!-- Topic Remapping -->
+        <remap from="scan" to="/scan"/>
+        
+        <!-- Additional stability parameters -->
+        <param name="laser_z_orientation" value="1"/>
+        <param name="tf_map_scanmatch_transform_frame_name" value="scanmatcher_frame"/>
+    </node>
+
+    <!-- RPLiDAR Node -->
+    <node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen">
+        <param name="serial_port" type="string" value="/dev/ttyUSB0"/>
+        <param name="serial_baudrate" type="int" value="115200"/>
+        <param name="frame_id" type="string" value="laser"/>
+        <param name="inverted" type="bool" value="false"/>
+        <param name="angle_compensate" type="bool" value="true"/>
+    </node>
+
+    <!-- TF Transformations -->
+    <!-- Map to Odom (disabled transform publishing from Hector) -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom" 
+        args="0.0 0.0 0.0 0 0 0.0 /map /odom 40" />
+        
+    <!-- Base to Laser TF -->
+    <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" 
+        args="0 0 0 0 0 0 /base_link /laser 100"/>
+
+    <!-- Robot State Publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+        respawn="false" output="screen"/>  
+
+    <!-- RViz Visualization -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find WAFL2025)/config/mapping.rviz"/>
+
+    <!-- ROS Control -->
+    <node name="controller_spawner" pkg="controller_manager" 
+        type="controller_manager" args="load diff_drive_controller" />
+
+    <!-- ******** YOUR EXISTING NODES ******** -->
+    <!-- Swerve Odometry Node -->
+    <node name="swerve_odometry_node" pkg="WAFL2025" type="swerve_odometry_node.py"
+        output="screen" respawn="true" />
+
+    <!-- Manual Drive Control Node -->
+    <node name="manual_drive_control" pkg="WAFL2025" type="manual_drive_control.py"
+        output="screen" respawn="true" />
+
+</launch>

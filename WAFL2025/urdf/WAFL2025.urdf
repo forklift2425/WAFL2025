@@ -5,7 +5,7 @@
 <robot
   name="WAFL2025">
   
- <link name="base_footprint"/>
+<!-- <link name="base_footprint"/> -->
 
 
   <link
@@ -48,12 +48,12 @@
       </geometry>
     </collision>
   </link>
-
-  <joint name="chassis_base_footprint" type="fixed">
+<!--<joint name="chassis_base_footprint" type="fixed">
     <origin xyz="0 0 0.125" rpy="0 0 0"/>  
     <parent link="base_footprint"/>
     <child link="base_link"/>
-  </joint>
+  </joint>-->
+  
 
 
   <link
@@ -409,65 +409,71 @@
     <dynamics
       damping="0.1"
       friction="0.1" />
-     
   </joint> 
-   <!-- hok -->
-  <link name="hokuyo_link">
-   <inertial>
-     <mass value="0.5"/>
-     <inertia ixx="0.001" ixy="0" ixz="0"
+
+  <!-- RPLiDAR A2M8 -->
+<link name="rplidar_link">
+  <inertial>
+    <mass value="0.5"/>
+    <inertia ixx="0.001" ixy="0" ixz="0"
              iyy="0.001" iyz="0"
              izz="0.001"/>
-   </inertial>
-   <visual>
+  </inertial>
+  <visual>
     <geometry>
-      <cylinder radius="0.04" length="0.06"/>  <!-- Adjust size based on your Hokuyo model -->
+      <cylinder radius="0.05" length="0.07"/>
+      <!-- Optional: Add mesh if you have one -->
       <mesh filename="package://WAFL2025/meshes/hokuyo.dae" scale="1 1 1"/>
     </geometry>
-    <material name="Blue">
-      <color rgba="0 0 1 1"/>
+    <material name="Orange">
+      <color rgba="1 0.5 0 1"/>
     </material>
-   </visual>
-   <collision>
+  </visual>
+  <collision>
     <geometry>
-      <cylinder radius="0.04" length="0.06"/>
+      <cylinder radius="0.05" length="0.07"/>
     </geometry>
-   </collision>
-  </link> 
-  <joint name="hokuyo_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="hokuyo_link"/>
-    <origin xyz="0.59 0 0.5" rpy="0 0 0"/>  <!-- Adjust position -->
-  </joint>
-  <!-- Hokuyo -->
-  <gazebo reference="hokuyo_link">
-    <sensor type="ray" name="hokuyo_laser">
-      <pose>0 0 0 0 0 0</pose>
-      <visualize>
-    	  true
-	</visualize>
-      <update_rate>10</update_rate>
-      <ray>
-       <scan>
-         <horizontal>
-          <samples>720</samples>
+  </collision>
+</link>
+
+<joint name="rplidar_joint" type="fixed">
+  <parent link="base_link"/>
+  <child link="rplidar_link"/>
+  <origin xyz="0.59 0 0.5" rpy="0 0 0"/>  <!-- Adjust position as needed -->
+</joint>
+
+ <!-- RPLiDAR A2M8 Gazebo Plugin -->
+<gazebo reference="rplidar_link">
+  <sensor type="ray" name="rplidar_sensor">
+    <pose>0 0 0 0 0 0</pose>
+    <visualize>true</visualize>
+    <update_rate>10</update_rate>
+    <ray>
+      <scan>
+        <horizontal>
+          <samples>800</samples>  <!-- A2M8 has 800 samples per scan -->
           <resolution>1</resolution>
-          <min_angle>-1.57</min_angle>
-          <max_angle>1.57</max_angle>
-         </horizontal>
-       </scan>
-       <range>
-         <min>0.1</min>
-         <max>30.0</max>
-         <resolution>0.01</resolution>
-       </range>
-      </ray>
-      <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
-       <topicName>/scan</topicName>
-       <frameName>hokuyo_link</frameName>
-      </plugin>
-    </sensor>
-  </gazebo>
+          <min_angle>-3.14159</min_angle>  <!-- -180° -->
+          <max_angle>3.14159</max_angle>   <!-- +180° -->
+        </horizontal>
+      </scan>
+      <range>
+        <min>0.15</min>  <!-- 15cm min range -->
+        <max>8.0</max>    <!-- 8m max range -->
+        <resolution>0.01</resolution>
+      </range>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.01</stddev>
+      </noise>
+    </ray>
+    <plugin name="gazebo_ros_rplidar_controller" filename="libgazebo_ros_laser.so">
+      <topicName>/scan</topicName>
+      <frameName>rplidar_link</frameName>
+    </plugin>
+  </sensor>
+</gazebo>
   
   <!-- Kinect-->
   
@@ -676,7 +682,7 @@
     <odometryFrame>odom</odometryFrame>
 
     <!-- Robot frame to calculate odometry from, defaults to `base_footprint` -->
-    <robotBaseFrame>base_footprint</robotBaseFrame>
+    <robotBaseFrame>base_link</robotBaseFrame>
 
     <!-- Odometry source, 0 for ENCODER, 1 for WORLD, defaults to WORLD -->
     <odometrySource>1</odometrySource>

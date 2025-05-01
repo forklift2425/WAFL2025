@@ -11,10 +11,11 @@ move_bindings = {
     'd': (0.0,  0.0, -1.0),  # turn right
     'q': (0.0,  1.0, 0.0),   # strafe left
     'e': (0.0, -1.0, 0.0),   # strafe right
+    'z': (0.0, 0.0, 0.0),   # strafe right
     ' ': (0.0,  0.0, 0.0),   # stop
 }
 
-speed = 1.5    # linear speed (m/s)
+speed = 1.0    # linear speed (m/s)
 turn  = 1.0    # angular speed (rad/s)
 
 def getKey(timeout):
@@ -46,6 +47,11 @@ def teleop():
             twist.linear.y  = lin_y * speed
             twist.angular.z = ang_z * turn
             pub.publish(twist)
+            if(key=='z'):
+                twist.linear.z  = 1.0
+            else :
+                twist.linear.z  = 0.0
+
         elif key == '\x03':  # Ctrl-C
             break
         rate.sleep()
