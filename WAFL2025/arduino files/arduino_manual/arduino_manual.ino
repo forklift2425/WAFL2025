@@ -32,22 +32,22 @@ float acc=0;
 #define STM32_BAUDRATE 9600
 
 // Motor Control Pins
-#define LEFT_MOTOR_PWM  3
+#define LEFT_MOTOR_PWM  9
 #define LEFT_MOTOR_DIR  4
 #define RIGHT_MOTOR_PWM 5
 #define RIGHT_MOTOR_DIR 6
 
 // Front Steering Pins (Stepper Motor)
-#define FRONT_STEER_DIR A9
-#define FRONT_STEER_STEP A8
+#define FRONT_STEER_DIR A4
+#define FRONT_STEER_STEP A5
 
 // Rear Steering Pins (DC Motor)
 #define REAR_STEER_PWM 12
 #define REAR_STEER_DIR_1 8
 #define REAR_STEER_DIR_2 13
 
-#define ENCODER_PIN_A 18  // Interrupt pin
-#define ENCODER_PIN_B 19  // Regular digital input
+#define ENCODER_PIN_A 2  // Interrupt pin
+#define ENCODER_PIN_B 3  // Regular digital input
 
 // Encoder parameters
 const int PPR = 600;           // Pulses Per Revolution

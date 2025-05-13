@@ -1,6 +1,6 @@
 // Encoder pins
-#define ENCODER_PIN_A 18  // Interrupt pin
-#define ENCODER_PIN_B 19  // Regular digital input
+#define ENCODER_PIN_A 2  // Interrupt pin
+#define ENCODER_PIN_B 3  // Regular digital input
 
 // Encoder parameters
 const int PPR = 600;           // Pulses Per Revolution

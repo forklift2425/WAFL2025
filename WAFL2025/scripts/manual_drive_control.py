@@ -18,7 +18,7 @@ class ManualDriveController:
 
         self.speeds = WheelSpeeds()
         self.angles = SteeringAngles()
-        self.avgPWM=100
+        self.avgPWM=90
         self.RS=0
         self.LS=0
         
@@ -35,7 +35,7 @@ class ManualDriveController:
             self.speeds.left_speed  = 0
             self.speeds.right_speed = 0
 
-            self.angles.front_angle +=0.2
+            self.angles.front_angle +=0.25
             self.angles.rear_angle = 0
 
             self.RS=speed
@@ -46,7 +46,7 @@ class ManualDriveController:
             self.speeds.left_speed  = 0
             self.speeds.right_speed = 0
 
-            self.angles.front_angle -=0.2
+            self.angles.front_angle -=0.25
             self.angles.rear_angle = 0
 
             self.RS=speed

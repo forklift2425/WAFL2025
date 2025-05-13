@@ -11,7 +11,7 @@ class CurvatureCalculator:
         
         # Subscribe to the local planner's trajectory
         self.sub = rospy.Subscriber(
-            '/move_base/DWAPlannerROS/local_plan', 
+            '/move_base/NavfnROS/plan', 
             Path, 
             self.path_callback
         )

@@ -421,7 +421,7 @@
   </inertial>
   <visual>
     <geometry>
-      <cylinder radius="0.05" length="0.07"/>
+      <cylinder radius="0.05" length="0.06"/>
       <!-- Optional: Add mesh if you have one -->
       <mesh filename="package://WAFL2025/meshes/hokuyo.dae" scale="1 1 1"/>
     </geometry>
@@ -431,7 +431,7 @@
   </visual>
   <collision>
     <geometry>
-      <cylinder radius="0.05" length="0.07"/>
+      <cylinder radius="0.05" length="0.06"/>
     </geometry>
   </collision>
 </link>
