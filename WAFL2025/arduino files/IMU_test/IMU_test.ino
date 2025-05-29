@@ -16,7 +16,7 @@ MPU9250_WE imu(MPU9250_ADDR);
 
 void setup() {
   // Initialize ROS with minimal settings
-  nh.getHardware()->setBaud(9600); // Reduced baud rate
+  nh.getHardware()->setBaud(19600); // Reduced baud rate
   nh.initNode();
   nh.advertise(imu_pub);
 

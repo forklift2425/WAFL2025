@@ -87,7 +87,7 @@ class SwerveOdometry:
         # Update pose
         self.x += dx * dt
         self.y += dy * dt
-        self.theta += dtheta * dt * 0.3
+        self.theta += dtheta * dt
         
         # Normalize orientation
         self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))

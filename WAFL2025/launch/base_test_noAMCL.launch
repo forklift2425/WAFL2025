@@ -1,0 +1,71 @@
+<launch>
+
+    <!-- Arguments -->
+    <arg name="arg_x" default="0.00" />
+    <arg name="arg_y" default="0.00" />
+    <arg name="arg_z" default="0.3" />
+    <arg name="arg_R" default="0.00" />
+    <arg name="arg_P" default="0.00" />
+    <arg name="arg_Y" default="0.00" />
+    <arg name="map_file" default="$(find WAFL2025)/maps/office_map.yaml"/>
+  
+    <!-- Move Base -->
+    <node pkg="move_base" type="move_base" name="move_base" output="screen">
+      <rosparam file="$(find WAFL2025)/param/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+      <rosparam file="$(find WAFL2025)/param/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+      <rosparam file="$(find WAFL2025)/param/global_costmap_params.yaml" command="load"/>
+      <rosparam file="$(find WAFL2025)/param/local_costmap_params.yaml" command="load"/>
+      <rosparam file="$(find WAFL2025)/param/dwa_local_planner_params.yaml" command="load"/>
+      <remap from="cmd_vel" to="/cmd_vel"/>
+    </node>
+  
+    <!-- Robot Description -->
+    <param name="robot_description" textfile="$(find WAFL2025)/urdf/WAFL2025.urdf"/>
+  
+    <!-- Joint State Publisher -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+      <param name="use_gui" value="False"/>
+      <rosparam param="source_list">[/joint_states]</rosparam>
+    </node>
+  
+    <!-- Map Server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
+  
+    <!-- Static Transform for map → odom -->
+    <node pkg="tf" type="static_transform_publisher" name="static_map_to_odom" 
+          args="0 0 0 0 0 0 /map /odom 100"/>
+  
+    <!-- RPLiDAR Node -->
+    <node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen">
+      <param name="serial_port" type="string" value="/dev/ttyUSB0"/>
+      <param name="serial_baudrate" type="int" value="115200"/>
+      <param name="frame_id" type="string" value="laser"/>
+      <param name="inverted" type="bool" value="false"/>
+      <param name="angle_compensate" type="bool" value="true"/>
+    </node>
+  
+    <!-- TF: base_link → laser -->
+    <node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster" 
+          args="0 0 0 0 0 0 /base_link /laser 100"/>
+  
+    <!-- Robot State Publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+          respawn="false" output="screen"/>  
+  
+    <!-- RViz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find WAFL2025)/config/path_planning.rviz"/>
+  
+    <!-- ROS Control -->
+    <node name="controller_spawner" pkg="controller_manager" 
+          type="controller_manager" args="load diff_drive_controller" />
+  
+    <!-- Your Swerve Odometry Node -->
+    <node name="swerve_odometry_node" pkg="WAFL2025" type="swerve_odometry_node.py"
+          output="screen" respawn="true" />
+
+    <!-- Your curvature_calc Node -->
+    <node name="curvature_calculator_py" pkg="WAFL2025" type="curvature_calc.py"
+          output="screen" respawn="true" />
+  
+  </launch>
+  
