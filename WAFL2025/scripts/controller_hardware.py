@@ -5,7 +5,8 @@ import numpy as np
 from std_msgs.msg import Float32MultiArray
 from nav_msgs.msg import Path, Odometry
 from tf.transformations import euler_from_quaternion
-from WAFL2025.msg import WheelSpeeds, SteeringAngles  # Custom messages
+from WAFL2025.msg import WheelSpeeds, SteeringAngles
+from geometry_msgs.msg import PoseWithCovarianceStamped
 
 ####################################
 # Handles subscription to /odom and stores current robot pose
@@ -13,7 +14,7 @@ from WAFL2025.msg import WheelSpeeds, SteeringAngles  # Custom messages
 class PoseHandler:
     def __init__(self):
         self.pose = [0.0, 0.0, 0.0]  # [x, y, yaw]
-        rospy.Subscriber("/odom", Odometry, self.callback)
+        rospy.Subscriber("/amcl_pose", PoseWithCovarianceStamped, self.callback)
 
     def callback(self, msg):
         self.pose[0] = msg.pose.pose.position.x
@@ -148,7 +149,7 @@ class SteeringController:
         self.heading_error_threshold = np.radians(10)      # if heading_error < 10°, force forward
 
         # Pose‐goal tolerances (bigger to account for path shift during spin)
-        self.position_tolerance = 0.90        # [m]
+        self.position_tolerance = 0.8        # [m]
         self.orientation_tolerance = np.radians(5)  # [rad]
 
         # Steering angles for “approximate in‐place spin” (Active Front+Rear)
@@ -190,47 +191,48 @@ class SteeringController:
         """
         x_r, y_r, theta_r = pose
         x_t, y_t, theta_t = target_pose
-        x_g, y_g, theta_g = self.goal_pose
-
+        
         # ------------------------------------------------------------
         # 1) “Rotate‐in‐place to fix orientation” if already close to (x_g, y_g)
-        dxg = x_g - x_r
-        dyg = y_g - y_r
-        dist_to_goal = np.hypot(dxg, dyg)
-        heading_error_goal = np.arctan2(np.sin(theta_g - theta_r),
-                                        np.cos(theta_g - theta_r))
-        heading_error_goal = -heading_error_goal
+        if self.goal_pose is not None:
+            x_g, y_g, theta_g = self.goal_pose
+            dxg = x_g - x_r
+            dyg = y_g - y_r
+            dist_to_goal = np.hypot(dxg, dyg)
+            heading_error_goal = np.arctan2(np.sin(theta_g - theta_r),
+                                            np.cos(theta_g - theta_r))
+             #heading_error_goal = -heading_error_goal
+            '''
+            # Log distance and heading error to goal
+            rospy.loginfo_throttle(
+                1.0,
+                f"[Debug] dist_to_goal={dist_to_goal:.3f}, heading_error_goal={np.degrees(heading_error_goal):.2f}°"
+            )
+            '''
+            if dist_to_goal < self.position_tolerance:
+                # We’re essentially at the final (x, y). Now check θ.
+                if abs(heading_error_goal) < self.orientation_tolerance:
+                    # Instead of stopping, exit pose control and allow other modes to run.
+                    rospy.loginfo_throttle(1.0, "[Debug] Pose within tolerance, continuing normal control.")
+                else:
+                    # Approximate in‐place spin using Active Front+Rear Steering.
+                    turn_dir = 1 if heading_error_goal > 0 else -1
+                    steer_front = turn_dir * self.spin_steer_angle
+                    steer_rear  = -turn_dir * self.spin_steer_angle
 
-        # Log distance and heading error to goal
-        rospy.loginfo_throttle(
-            1.0,
-            f"[Debug] dist_to_goal={dist_to_goal:.3f}, heading_error_goal={np.degrees(heading_error_goal):.2f}°"
-        )
+                    # Choose a modest spin speed (m/s) proportional to heading_error_goal
+                    K_rot = 10
+                    v_rot = np.clip(K_rot * heading_error_goal, -2, +2)
 
-        if dist_to_goal < self.position_tolerance:
-            # We’re essentially at the final (x, y). Now check θ.
-            if abs(heading_error_goal) < self.orientation_tolerance:
-                # Instead of stopping, exit pose control and allow other modes to run.
-                rospy.loginfo_throttle(1.0, "[Debug] Pose within tolerance, continuing normal control.")
-            else:
-                # Approximate in‐place spin using Active Front+Rear Steering.
-                turn_dir = 1 if heading_error_goal > 0 else -1
-                steer_front = turn_dir * self.spin_steer_angle
-                steer_rear  = -turn_dir * self.spin_steer_angle
+                    v_left  = +v_rot * turn_dir   # left wheels forward/back
+                    v_right = +v_rot * turn_dir   # right wheels same direction to pivot
 
-                # Choose a modest spin speed (m/s) proportional to heading_error_goal
-                K_rot = 10
-                v_rot = np.clip(K_rot * heading_error_goal, -2, +2)
-
-                v_left  = +v_rot * turn_dir   # left wheels forward/back
-                v_right = +v_rot * turn_dir   # right wheels same direction to pivot
-
-                rospy.loginfo_throttle(
-                    1.0,
-                    f"[Debug-Spin] turn_dir={turn_dir}, v_left={v_left:.2f}, v_right={v_right:.2f}, "
-                    f"steer_rear={np.degrees(steer_rear):.1f}°, steer_front={np.degrees(steer_front):.1f}°"
-                )
-                return [v_left, v_right, steer_rear, steer_front]
+                    rospy.loginfo_throttle(
+                        1.0,
+                        f"steer_rear={np.degrees(steer_rear):.1f}°, steer_front={np.degrees(steer_front):.1f}°")
+                    return [v_left, v_right, steer_rear, steer_front]
+        else:
+            rospy.logwarn_throttle(1.0, "No goal pose set! Skipping spin check")
 
         # ------------------------------------------------------------
         # 2) Otherwise, “not at goal yet” → do Pure Pursuit + multi‐mode logic
@@ -249,11 +251,11 @@ class SteeringController:
         # Log alpha and heading_error for debugging
         rospy.loginfo_throttle(
             1.0,
-            f"[Debug] alpha={np.degrees(alpha):.2f}°, raw_heading_error={np.degrees(raw_heading_error):.2f}°"
+            f"[Debug] alpha={np.degrees(alpha):.2f}°"
         )
 
         #  2c) Pure Pursuit steering angle
-        steer = np.arctan2(2.8 * self.L * np.sin(alpha), lookahead)
+        steer = np.arctan2(self.L * np.sin(alpha), lookahead)
         steer = -steer  # flipped sign as robot’s kinematics expect it
         steer = np.clip(steer, -np.radians(90), +np.radians(90))
 
@@ -262,16 +264,13 @@ class SteeringController:
             abs_alpha = abs(alpha)
             direction = self.last_direction
 
-            if abs(raw_heading_error) < self.heading_error_threshold:
-                direction = +1
-            else:
-                if self.last_direction > 0:
-                    # Currently forward → only reverse if α > alpha_forward_to_backward
-                    if abs_alpha > self.alpha_forward_to_backward:
-                        direction = -1
-                else:
-                    # Currently backward → only go forward if α < alpha_backward_to_forward
-                    if abs_alpha < self.alpha_backward_to_forward:
+            if self.last_direction > 0:
+              # Currently forward → only reverse if α > alpha_forward_to_backward
+               if abs_alpha > self.alpha_forward_to_backward:
+                    direction = -1
+               else:
+                  # Currently backward → only go forward if α < alpha_backward_to_forward
+                  if abs_alpha < self.alpha_backward_to_forward:
                         direction = +1
 
             # Log hysteresis decision
@@ -290,11 +289,6 @@ class SteeringController:
                 direction = +1
             else:
                 direction = -1
-
-            rospy.loginfo_throttle(
-                1.0,
-                f"[Debug-Mode{mode}] abs(alpha)={np.degrees(abs(alpha)):.2f}°, direction={direction}"
-            )
             self.last_direction = direction
 
         #  2e) Closed‐loop velocity (both wheels same speed in normal driving)
@@ -306,17 +300,18 @@ class SteeringController:
         #      In normal driving, we set v_left = v_right = v_control
         if mode == 1:
             # Front‐steer only
-            front = steer
+            front = -steer
             rear  = 0.0
         elif mode == 2:
             # Counter‐steer: front = 1.5*steer; rear = –(1.5/0.75)*front
-            front = 1.5 * steer
-            rear  = -1.5 / 0.75 * front
+            front = - steer
+            rear  = +0.75 * steer
         else:
             # mode == 3 (crab): front = –steer * 1.3, rear = –steer * 1.3
-            front = -steer * 1.3
-            rear  = -steer * 1.3
-
+         #   front = -steer * 1.3
+         #   rear  = -steer * 1.3
+            front = -steer
+            rear  = -steer 
         # Log steering angles and velocities
         rospy.loginfo_throttle(
             1.0,
@@ -334,7 +329,7 @@ class SteeringController:
 # Publishes computed command to /swerve/raw_data
 ####################################
 class CommandPublisher:
-    def __init__(self):
+    def __init__(self):  # FIXED: Changed from init() to __init__()
         self.wheel_speed_pub = rospy.Publisher("/wheel_speeds", WheelSpeeds, queue_size=10)
         self.steering_angle_pub = rospy.Publisher("/steering_angles", SteeringAngles, queue_size=10)
 
@@ -372,19 +367,20 @@ class ControllerNode:
         self.path_manager = PathManager()
         self.mode_selector = ControlModeSelector()
         self.controller = SteeringController()
-        self.publisher = CommandPublisher()
+        self.publisher = CommandPublisher()  # Now properly initialized
         self.lookahead = 1.0
         # Loop at 10 Hz
         self.timer = rospy.Timer(rospy.Duration(0.1), self.loop)
 
     def loop(self, event):
         if not self.path_manager.raw_path:
+            self.controller.goal_pose = None  # Clear goal when no path
             return
 
         idx, braking = self.path_manager.get_target_index(self.pose_handler.pose)
         target = self.path_manager.raw_path[idx]
 
-        # Provide the final path point to the controller so it knows (x_g,y_g,θ_g)
+        # Provide the final path point to the controller
         self.controller.goal_pose = self.path_manager.raw_path[-1]
 
         if len(target) < 3:
@@ -405,7 +401,7 @@ class ControllerNode:
 ####################################
 if __name__ == '__main__':
     try:
-        ControllerNode()
+        node = ControllerNode()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass

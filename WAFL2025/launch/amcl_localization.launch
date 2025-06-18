@@ -8,6 +8,17 @@
     <arg name="arg_Y" default="0.00" />
     <arg name="map_file" default="$(find WAFL2025)/maps/office_map.yaml"/> <!-- Path to your map file -->
 
+
+    <!-- Move Base -->
+    <node pkg="move_base" type="move_base" name="move_base" output="screen">
+      <rosparam file="$(find WAFL2025)/param/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+      <rosparam file="$(find WAFL2025)/param/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+      <rosparam file="$(find WAFL2025)/param/global_costmap_params.yaml" command="load"/>
+      <rosparam file="$(find WAFL2025)/param/local_costmap_params.yaml" command="load"/>
+      <rosparam file="$(find WAFL2025)/param/dwa_local_planner_params.yaml" command="load"/>
+      <remap from="cmd_vel" to="/cmd_vel"/>
+    </node>
+
     <!-- Load the robot into parameter server -->
     <param name="robot_description" textfile="$(find WAFL2025)/urdf/WAFL2025.urdf"/> 
 
@@ -27,16 +38,17 @@
         <param name="max_particles" value="5000"/>
         <param name="kld_err" value="0.05"/>
         <param name="kld_z" value="0.99"/>
-        <param name="update_min_d" value="0.2"/>
-        <param name="update_min_a" value="0.5"/>
-        <param name="resample_interval" value="2"/>
-        <param name="transform_tolerance" value="0.1"/>
+        <param name="update_min_d" value="0.05"/>
+        <param name="update_min_a" value="0.1"/>
+        <param name="resample_interval" value="1"/>
+        <param name="transform_tolerance" value="0.5"/>
         <param name="recovery_alpha_slow" value="0.0"/>
         <param name="recovery_alpha_fast" value="0.0"/>
         <param name="initial_pose_x" value="$(arg arg_x)"/>
         <param name="initial_pose_y" value="$(arg arg_y)"/>
         <param name="initial_pose_a" value="$(arg arg_Y)"/>
-        <param name="gui_publish_rate" value="10.0"/>
+        <param name="odom_model_type" value="diff-corrected"/> <!-- Use corrected model -->
+        <param name="gui_publish_rate" value="50.0"/>
         
         <!-- Laser Model Parameters -->
         <param name="laser_min_range" value="-1.0"/>
@@ -51,7 +63,7 @@
         <param name="laser_model_type" value="likelihood_field"/>
         
         <!-- Odometry Model Parameters -->
-        <param name="odom_model_type" value="diff"/>
+       <!--<param name="odom_model_type" value="diff"/> -->
         <param name="odom_alpha1" value="0.2"/>
         <param name="odom_alpha2" value="0.2"/>
         <param name="odom_alpha3" value="0.2"/>
@@ -95,9 +107,13 @@
     <!-- ******** YOUR EXISTING NODES ******** -->
     <!-- Swerve Odometry Node -->
     <node name="swerve_odometry_node" pkg="WAFL2025" type="swerve_odometry_node.py"
-        output="screen" respawn="true" />
+          output="screen" respawn="true" />
 
-    <!-- Manual Drive Control Node -->
-    <node name="manual_drive_control" pkg="WAFL2025" type="manual_drive_control.py"
-        output="screen" respawn="true" />
+    <!-- curvature_calc Node -->
+    <node name="curvature_calculator_py" pkg="WAFL2025" type="curvature_calc.py"
+          output="screen" respawn="true" />
+
+    <!-- Controller Node -->
+    <node name="controller_hardware_py" pkg="WAFL2025" type="controller_hardware.py"
+          output="screen" respawn="true" />
 </launch>

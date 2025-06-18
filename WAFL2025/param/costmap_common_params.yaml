@@ -1,10 +1,10 @@
-obstacle_range: 2.0 #maximum obstacle distance to include in costmap
-raytrace_range: 2.0
+obstacle_range: 0.2 #maximum obstacle distance to include in costmap
+raytrace_range: 0.2
 
 footprint: [[-0.4, -0.28], [-0.4, 0.28], [0.9, 0.28], [0.9, -0.28]] 
 #robot_radius: 0.105
 
-inflation_radius: 0.1  # At least 50% of the robot’s width (0.575m)
+inflation_radius: 0.5  # At least 50% of the robot’s width (0.575m)
 cost_scaling_factor: 0.5  # Sharper cost decay to prioritize obstacle avoidance
 
 map_type: costmap

@@ -85,9 +85,9 @@ class SwerveOdometry:
         dtheta = -omega
 
         # Update pose
-        self.x += dx * dt
-        self.y += dy * dt
-        self.theta += dtheta * dt
+        self.x += dx * dt * 0.4  
+        self.y += dy * dt * 0.4
+        self.theta += dtheta * dt * 0.05
         
         # Normalize orientation
         self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
@@ -99,7 +99,7 @@ class SwerveOdometry:
         # TF Broadcast
         self.tf_broadcaster.sendTransform(
             (self.x, self.y, 0),
-            quaternion_from_euler(0, 0, self.theta),
+            quaternion_from_euler(0, 0, -self.theta),
             current_time,
             "base_link",
             "odom"

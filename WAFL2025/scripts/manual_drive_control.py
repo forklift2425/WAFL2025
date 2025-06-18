@@ -36,7 +36,7 @@ class ManualDriveController:
             self.speeds.right_speed = 0
 
             self.angles.front_angle +=0.25
-            self.angles.rear_angle = 0
+            self.angles.rear_angle += 0.25
 
             self.RS=speed
             self.LS=speed
@@ -47,7 +47,7 @@ class ManualDriveController:
             self.speeds.right_speed = 0
 
             self.angles.front_angle -=0.25
-            self.angles.rear_angle = 0
+            self.angles.rear_angle -= 0.25
 
             self.RS=speed
             self.LS=speed

@@ -20,6 +20,7 @@ const int WHEEL_PPR = 600;
 const float STEERING_GEAR_RATIO = 4.0;
 const float MAX_STEERING_ANGLE = 90.0;
 float currentAngle=0;
+const float MAX_LINEAR = 2.0; 
 
 // Motor Control Pins
 #define LEFT_MOTOR_PWM 10
@@ -182,7 +183,7 @@ void loop() {
         sensor_data[0] = rads;
         sensor_data[1] = rads;
         sensor_data[2] = 0;
-        sensor_data[3] = currentAngle * PI /180;
+        sensor_data[3] = - currentAngle * PI /180;
         
         sensor_pub.publish(&sensor_msg);
         lastUpdateTime = currentTime;
@@ -195,9 +196,13 @@ void loop() {
     steerStepper(error);
 
     // Motor control
-    analogWrite(LEFT_MOTOR_PWM, constrain(abs(left_speed), 0, 255));
-    digitalWrite(LEFT_MOTOR_DIR, left_speed < 0 ? HIGH : LOW);
-    analogWrite(RIGHT_MOTOR_PWM, constrain(abs(right_speed), 0, 255));
+    
+    int pwm_left = (int)constrain( (fabs(left_speed) / MAX_LINEAR)*255.0, 0, 60 );
+    analogWrite(LEFT_MOTOR_PWM, pwm_left);
+     digitalWrite(LEFT_MOTOR_DIR, left_speed < 0 ? HIGH : LOW);
+     
+    int pwm_right = (int)constrain( (fabs(right_speed) / MAX_LINEAR)*255.0, 0, 60 );
+    analogWrite(RIGHT_MOTOR_PWM, pwm_right);
     digitalWrite(RIGHT_MOTOR_DIR, right_speed < 0 ? HIGH : LOW);
 
     nh.spinOnce();
