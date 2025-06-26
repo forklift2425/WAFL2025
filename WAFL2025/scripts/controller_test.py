@@ -1,121 +1,141 @@
 #!/usr/bin/env python3
 
-import numpy as np
-from numpy import array, pi
 import rospy
-import math
-from geometry_msgs.msg import Twist, PoseWithCovarianceStamped
-from nav_msgs.msg import Odometry, Path
-from std_msgs.msg import Int8 , Float64
+import numpy as np
 from std_msgs.msg import Float32MultiArray
+from nav_msgs.msg import Path
+from nav_msgs.msg import Odometry
+from tf.transformations import euler_from_quaternion
 
-class Controller():
+class PoseHandler:
     def __init__(self):
+        self.pose = [0.0, 0.0, 0.0]
+        rospy.Subscriber("/odom", Odometry, self.callback)
 
-        rospy.Subscriber("/path_curvature", Float32MultiArray, self.curvature_callback)
+    def callback(self, msg):
+        self.pose[0] = msg.pose.pose.position.x
+        self.pose[1] = msg.pose.pose.position.y
+        q = msg.pose.pose.orientation
+        self.pose[2] = 2 * np.arctan2(q.z, q.w)  # Yaw
+        rospy.loginfo_throttle(1.0, f"[PoseHandler] Updated Pose: {self.pose}")
 
-        self.dt = 0.1
-        self.setpointVelocity = 1
-        self.currentVelocity = 0.0
-        self.lookaheadDistance = 0.8
-        self.brakingMargin = 0.3
+class PathManager:
+    def __init__(self, braking_margin=0.3, lookahead=1.0):
+        self.path = []
+        self.braking_margin = braking_margin
+        self.lookahead = lookahead
+        rospy.Subscriber("/move_base/NavfnROS/plan", Path, self.callback)
 
-        self.pose= [0,0,0]
-        self.my_pos_x = 0
-        self.my_pos_y = 0
-        self.my_orien = 0
-        self.my_wheel_heading = 0
+    def callback(self, msg):
+        self.path = [[p.pose.position.x, p.pose.position.y] for p in msg.poses]
+        rospy.loginfo_throttle(1.0, f"[PathManager] Received new path with {len(self.path)} points")
 
-        self.control_mode=0         # Mode 1 : Ackreman mode    Mode 2 : AFRS       Mode 3 : CRAB
+    def get_target_index(self, pose):
+        if not self.path:
+            return 0, True
+        dists = np.linalg.norm(np.array(self.path) - np.array(pose[:2]), axis=1)
+        min_idx = np.argmin(dists)
+        braking = dists[-1] < self.braking_margin
+        for i in range(min_idx + 1, len(dists)):
+            if dists[i] > self.lookahead:
+                return i, braking
+        return min_idx, braking
 
-        
-    def curvature_callback(self, msg):
-        self.curvatures = abs(msg.data)
-        if self.curvatures > 2.1 :
-            self.control_mode=1
-        elif self.curvatures < 2.1 and  self.curvatures > 0.2 :
-            self.control_mode=2
+class ControlModeSelector:
+    def __init__(self):
+        self.mode = 0
+        rospy.Subscriber("/path_curvature", Float32MultiArray, self.callback)
 
-        elif self.curvatures < 0.2 :
-            self.control_mode=3
+    def callback(self, msg):
+        if not msg.data:
+            return
+        k = abs(float(msg.data[0]))
+        if k > 2.1:
+            self.mode = 1
+        elif 0.2 <= k <= 2.1:
+            self.mode = 2
         else:
-            self.control_mode=0
-            
-        rospy.loginfo("my current mode is : %f",self.control_mode)
+            self.mode = 3
+        rospy.loginfo_throttle(1.0, f"[ControlModeSelector] Curvature: {k:.3f}, Selected Mode: {self.mode}")
 
+class SteeringController:
+    def __init__(self, wheelbase=0.5, v_setpoint=1.0):
+        self.L = wheelbase
+        self.v = v_setpoint
 
+    def compute(self, pose, target, mode, braking, lookahead):
+        dx = target[0] - pose[0]
+        dy = target[1] - pose[1]
+        alpha = np.arctan2(dy, dx) - pose[2]
+        alpha = np.arctan2(np.sin(alpha), np.cos(alpha))  # Normalize
+        steer = np.arctan2(2 * self.L * np.sin(alpha), lookahead)
 
-    def purePursuit(self):
-        
-        ###              Implement pure pursuit controller here               ###
-        #            Take as an input the current state of the car,             #
-        #                     waypoints & targetIndex                           #
-        #                      Return steering angle                            #
-        #       which we will use at Ackreman Steering Mode & AFRS Mode         #
-        if self.stop or self.brake:
-            return 0.0
-        
-        self.targetIndex = self.searchTargetPoint()
-        targetPoint = self.path[self.targetIndex]
+        rospy.loginfo_throttle(
+            1.0,
+            f"[SteeringController DEBUG] dx: {dx:.3f}, dy: {dy:.3f}, "
+            f"alpha: {alpha:.3f}, steer: {steer:.3f}"
+        )
 
+        if mode == 1:
+            front, rear = steer, 0.0
+        elif mode == 2:
+            front = steer
+            rear = -0.5 * front
+        elif mode == 3:
+            front = rear = alpha
 
-        myx = self.my_pos_x
-        myy = self.my_pos_y
-        theta = self.my_orien
-        target_x = targetPoint[0]
-        target_y = targetPoint[1]
-
-
-        alpha = np.arctan2(target_y - myy, target_x - myx) - theta
-        steering_angle = np.arctan2(2*self.L*np.sin(alpha) , self.lookaheadDistance)
-
-        #action = self.PID(self.steer_PID_Selector,self.kp_steer, self.ki_steer, self.kd_steer, steering_angle, self.my_wheel_heading, clip = self.angleLimit)
-
-    def PID(self,selector ,kp, ki, kd, setpoint, feedback, **kwargs):
-        error = setpoint - feedback
-
-        error_dot = (error - self.error_previous)/self.dt
-
-
-        self.error_previous = error
-
-        if selector == self.steer_PID_Selector:
-            self.error_integral_steer += error*self.dt
-            action = kp*error + ki*self.error_integral_steer + kd*error_dot
-
+        if braking:
+            rospy.loginfo_throttle(1.0, "[SteeringController] Braking active")
+            return [0.0, 0.0, rear, front]
         else:
-            self.error_integral_drive += error*self.dt
-            action = kp*error + ki*self.error_integral_drive + kd*error_dot
+            rospy.loginfo_throttle(
+                1.0,
+                f"[SteeringController] Mode: {mode}, Left/Right: {self.v:.2f}, "
+                f"Rear: {rear:.2f}, Front: {front:.2f}"
+            )
+            return [self.v, self.v, rear, front]
 
-        if abs(error) > (2*pi/180) or selector == self.drive_PID_Selector :
-            return action
-        else:
-            self.error_integral_steer = 0
-            self.error_integral_drive = 0
-            return 0    
-        
-    def searchTargetPoint(self):
-        ###           Search for target point in the given path               ###
-        #       Take as an input the current state of the car & waypoints       #
-        #                   Return index of target point                        #
+class CommandPublisher:
+    def __init__(self):
+        self.pub = rospy.Publisher("/swerve/raw_data", Float32MultiArray, queue_size=10)
 
-        distances = np.linalg.norm(array(self.path[self.targetIndex:]) - array([self.my_pos_x, self.my_pos_y]).transpose(), axis=1)
-        min_index = np.argmin(distances)
+    def publish(self, command):
+        msg = Float32MultiArray()
+        msg.data = command
+        rospy.loginfo_throttle(1.0, f"[CommandPublisher] Publishing: {command}")
+        self.pub.publish(msg)
 
-        if distances[-1] < self.brakingMargin:
-            self.brake = True
-        else:
-            self.brake = False
+class ControllerNode:
+    def __init__(self):
+        rospy.init_node("path_controller_modular")
+        self.pose_handler = PoseHandler()
+        self.path_manager = PathManager()
+        self.mode_selector = ControlModeSelector()
+        self.controller = SteeringController()
+        self.publisher = CommandPublisher()
+        self.lookahead = 1.0
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.loop)
 
-        for i in range(min_index,len(distances)):
-            if distances[i] >= self.lookaheadDistance:
-                return i + self.targetIndex
-        return min_index + self.targetIndex
-    
+    def loop(self, event):
+        if not self.path_manager.path:
+            rospy.logwarn_throttle(1.0, "[ControllerNode] No path available")
+            return
 
+        idx, braking = self.path_manager.get_target_index(self.pose_handler.pose)
+        target = self.path_manager.path[idx]
+        rospy.loginfo_throttle(1.0, f"[ControllerNode] Target Index: {idx}, Target: {target}, Braking: {braking}")
+        cmd = self.controller.compute(
+            self.pose_handler.pose,
+            target,
+            self.mode_selector.mode,
+            braking,
+            self.lookahead
+        )
+        self.publisher.publish(cmd)
 
 if __name__ == '__main__':
     try:
-        controller = Controller()
+        ControllerNode()
+        rospy.spin()
     except rospy.ROSInterruptException:
         pass

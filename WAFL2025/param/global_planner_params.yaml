@@ -1,0 +1,4 @@
+NavfnROS:
+  allow_unknown: true
+  planner_window_x: 5.0
+  planner_window_y: 5.0

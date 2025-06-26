@@ -1,0 +1,23 @@
+DWAPlannerROS:
+  # Required Parameters
+  holonomic_robot: true
+  # DWA Local Planner (dwa_local_planner_params.yaml)
+  max_vel_x: 0.5
+  min_vel_x: -0.5
+  max_vel_y: 0.5
+  min_vel_y: -0.5
+  acc_lim_x: 0.5
+  acc_lim_y: 0.5
+  acc_lim_theta: 1.0
+  max_rotational_vel: 1.0
+  
+  # Tolerances
+  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.2
+  
+  # Swerve-specific
+  meter_scoring: true
+  sim_time: 2.0
+  vx_samples: 20
+  vy_samples: 20
+  vth_samples: 40
